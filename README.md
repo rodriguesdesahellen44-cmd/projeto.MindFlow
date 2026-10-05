@@ -1,4 +1,6 @@
-# ✦ MindFlow
+# projeto.MindFlow
+
+## ✦ MindFlow
 
 MindFlow é um diário emocional retrô para projeto escolar. Ele combina pixel art, autorreflexão e pequenas conquistas sem se apresentar como terapia ou diagnóstico.
 
@@ -52,4 +54,4 @@ python3 -m unittest discover -s tests -v
 
 O schema SQLite usado pelo aplicativo está em [`database/sqlite_schema.sql`](database/sqlite_schema.sql). Ao iniciar, o servidor Python cria as tabelas automaticamente e mantém o perfil, o diário, os registros emocionais, as reflexões e as missões concluídas.
 
-O schema MySQL 8 do diagrama do MindFlow permanece em [`database/schema.sql`](database/schema.sql). A entrega em PDF com o DER e o schema correspondente está em [`database/entrega-modelagem-banco.pdf`](database/entrega-modelagem-banco.pdf).
+O schema MySQL 8 do diagrama do MindFlow permanece em [`database/schema.sql`](database/schema.sql).
