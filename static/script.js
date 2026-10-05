@@ -15,10 +15,30 @@ const questions = ['O que te deixou feliz hoje?', 'O que você gostaria de deixa
 let state = load();
 let breathTimer;
 let selectedMinutes = 1;
+let saveQueue = Promise.resolve();
+let saveErrorShown = false;
 
 function initialState() { return { name: '', avatar: '🌱', xp: 0, entries: [], moods: [], reflections: [], missions: [], wordNote: '', favoriteWord: false, theme: 'light' }; }
 function load() { try { return { ...initialState(), ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch { return initialState(); } }
-function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+function save() {
+  const snapshot = JSON.stringify(state);
+  localStorage.setItem(KEY, snapshot);
+  saveQueue = saveQueue.catch(() => {}).then(async () => {
+    const response = await fetch('/api/state', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: snapshot });
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      throw new Error(result.error || `HTTP ${response.status}`);
+    }
+    saveErrorShown = false;
+  });
+  saveQueue.catch(error => {
+    console.error('Não foi possível salvar no banco SQLite:', error);
+    if (!saveErrorShown) {
+      toast('Não foi possível salvar no banco. Seus dados locais foram mantidos.');
+      saveErrorShown = true;
+    }
+  });
+}
 function $(id) { return document.getElementById(id); }
 function toast(message) { const el = $('toast'); el.textContent = message; el.classList.add('show'); clearTimeout(toast.timer); toast.timer = setTimeout(() => el.classList.remove('show'), 2200); }
 function levelData() { return levels.reduce((current, level) => state.xp >= level.from ? level : current, levels[0]); }
@@ -81,5 +101,36 @@ function exportData() { const blob = new Blob([JSON.stringify(state, null, 2)], 
 function deleteData() { if (!confirm('Apagar todos os registros locais?')) return; const name = state.name; state = initialState(); state.name = name; save(); render(); toast('Registros apagados.'); }
 function logout() { if (!confirm('Deseja deslogar?')) return; state.name = ''; save(); $('app').classList.add('hidden'); $('welcome').classList.remove('hidden'); $('name-input').value = ''; }
 
-function init() { bindNavigation(); bindForms(); renderMoods(); renderMoodOptions(); const storedName = state.name; if (storedName) { $('welcome').classList.add('hidden'); $('app').classList.remove('hidden'); } $('theme').value = state.theme; document.body.classList.toggle('dark', state.theme === 'dark'); $('word-note').value = state.wordNote; render(); }
+async function init() {
+  bindNavigation();
+  bindForms();
+  renderMoods();
+  renderMoodOptions();
+  $('welcome-form').querySelectorAll('input, button').forEach(control => { control.disabled = true; });
+  try {
+    const response = await fetch('/api/state');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const result = await response.json();
+    if (result.state) {
+      state = { ...initialState(), ...result.state };
+      localStorage.setItem(KEY, JSON.stringify(state));
+    } else if (localStorage.getItem(KEY)) {
+      save();
+    } else {
+      state = initialState();
+    }
+  } catch (error) {
+    console.error('Não foi possível carregar os dados do banco SQLite:', error);
+    toast('Banco indisponível. Os dados locais serão usados até reconectar.');
+  }
+  $('welcome-form').querySelectorAll('input, button').forEach(control => { control.disabled = false; });
+  if (state.name) {
+    $('welcome').classList.add('hidden');
+    $('app').classList.remove('hidden');
+  }
+  $('theme').value = state.theme;
+  document.body.classList.toggle('dark', state.theme === 'dark');
+  $('word-note').value = state.wordNote;
+  render();
+}
 init();

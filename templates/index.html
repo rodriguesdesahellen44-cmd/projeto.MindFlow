@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="MindFlow: diário emocional, autorreflexão e pequenas conquistas.">
   <title>✦ MindFlow</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div id="welcome" class="welcome-screen">
@@ -90,6 +90,6 @@
     <nav class="bottom-nav" aria-label="Navegação principal"><button class="active" data-page="inicio">⌂<small>Início</small></button><button data-page="humor">♡<small>Humor</small></button><button data-page="diario">▤<small>Diário</small></button><button data-page="historico">◷<small>Histórico</small></button><button data-page="perfil">◉<small>Perfil</small></button></nav>
   </div>
   <div id="toast" class="toast"></div>
-  <script src="script.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
